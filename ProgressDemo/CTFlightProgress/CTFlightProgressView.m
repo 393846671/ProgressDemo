@@ -16,7 +16,6 @@
     ProgressImageResizingMode progressImgResizeMode;
     TrackImageResizingMode trackImgResizeMode;
     float currentPercent;
-    int currentIndex;
     NSTimer * timer;
     BOOL animation;
 }
@@ -37,7 +36,6 @@
         SYSTEM_VERSION = [[[UIDevice currentDevice] systemVersion] floatValue];
         self.backgroundColor = [UIColor clearColor];
         currentPercent = 0.0f;
-        currentIndex = 0;
         animation = NO;
     }
     return self;
@@ -71,7 +69,12 @@
     }else if (_progress >= 1.0f){
         fillPercent = 1.0f;
     }else {
-        fillPercent = _progress;
+        if (animation) {
+            fillPercent = currentPercent;
+        }else{
+            fillPercent = _progress;
+        }
+        
     }
     
     //绘制track
@@ -144,20 +147,29 @@
 
 #pragma mark - -----------------------设置进度方法------------------------
 - (void)setProgress:(float)progress animated:(BOOL)animated{
+    currentPercent = _progress;
     if (animated) { //如果需要动画的话
         animation = animated;
-        [UIView animateWithDuration:0.3f delay:0 options:UIViewAnimationOptionAllowUserInteraction animations:^{
-            [UIView setAnimationCurve:UIViewAnimationCurveLinear];
-            self.progress = progress;
-        } completion:^(BOOL finished) {
-//            isAnimating_ = NO;
-        }];
+        _progress = progress;
+        timer = [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(animationDraw) userInfo:nil repeats:YES];
     }else{
         _progress = progress;
         [self setNeedsDisplay];
     }
 }
 
+-(void)animationDraw{
+    currentPercent+=0.01f;
+    if (currentPercent > _progress) {
+        currentPercent = _progress;
+        [timer invalidate];
+        timer = nil;
+    }else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self setNeedsDisplay];
+        });
+    }
+}
 
 - (void)setProgress:(float)progress{
     [self setProgress:progress animated:NO];

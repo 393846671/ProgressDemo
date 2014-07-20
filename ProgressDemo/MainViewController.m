@@ -22,6 +22,7 @@
     CTFlightProgressView * flightProgressView;
     UIButton * btn;
     UIImageView * iv;
+    float num;
 }
 
 - (instancetype)initWithStyle:(UITableViewStyle)style
@@ -29,6 +30,7 @@
     self = [super initWithStyle:style];
     if (self) {
         // Custom initialization
+        num = 0;
     }
     return self;
 }
@@ -99,26 +101,23 @@
     flightProgressView.radius = 30.0f;
     flightProgressView.trackTintColor = [UIColor blueColor];
     flightProgressView.progressImage = [UIImage imageNamed:@"navBar"];
+    num = 0.1;
     [NSTimer scheduledTimerWithTimeInterval:0.5f target:self selector:@selector(add) userInfo:nil repeats:YES];
     [cell.contentView addSubview:flightProgressView];
-    UIImage * resizeImg = [img resizableImageWithCapInsets:UIEdgeInsetsZero resizingMode:UIImageResizingModeStretch];
-    iv = [[UIImageView alloc]initWithFrame:CGRectMake(0.0f, 200.0f, 320.0f, 640.0f)];
-    iv.image = resizeImg;
-    [cell.contentView addSubview:iv];
     return cell;
 }
 
 
 -(void)add{
     if (flightProgressView) {
-        flightProgressView.progress += 0.3;
-        iv.frame = CGRectMake(0.0f, 200.0f, iv.frame.size.width-30.0f, iv.frame.size.height-50.0f);
+        num += num*num;
+        [flightProgressView setProgress:num animated:YES];
     }
 }
 
 -(void)reset{
     flightProgressView.progress = 0.0f;
-    iv.frame = CGRectMake(0.0f, 200.0f, 320.0f, 640.0f);
+    num = 0.1;
 }
 
 @end
