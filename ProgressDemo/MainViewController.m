@@ -21,6 +21,7 @@
     CustomProgressView * progressView;
     CTFlightProgressView * flightProgressView;
     UIButton * btn;
+    UIImageView * iv;
 }
 
 - (instancetype)initWithStyle:(UITableViewStyle)style
@@ -63,6 +64,9 @@
     return 1;
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 900.0f;
+}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -85,29 +89,36 @@
     // Configure the cell...
     btn = [UIButton buttonWithType:UIButtonTypeSystem];
     [btn setTitle:@"click" forState:UIControlStateNormal];
-    [btn addTarget:self action:@selector(add) forControlEvents:UIControlEventTouchUpInside];
+    [btn addTarget:self action:@selector(reset) forControlEvents:UIControlEventTouchUpInside];
     btn.frame = CGRectMake(40.0f, 80.0f, 200.0f, 40.0f);
     [cell.contentView addSubview:btn];
     
-    flightProgressView = [[CTFlightProgressView alloc]initWithFrame:CGRectMake(40.0f, 140.0f, 200.0f, 60.0f)];
+    flightProgressView = [[CTFlightProgressView alloc]initWithFrame:CGRectMake(40.0f, 140.0f, 200.0f, 60.0f) progressImageResizingMode:ProgressImageResizingModeStretch trackImageResizingMode:TrackImageResizingModeTile];
     UIImage * img = [UIImage imageNamed:@"mainTitle"];
     flightProgressView.trackImage = img;
-//    flightProgressView.radius = 20.0f;
+    flightProgressView.radius = 30.0f;
     flightProgressView.trackTintColor = [UIColor blueColor];
     flightProgressView.progressImage = [UIImage imageNamed:@"navBar"];
-    [flightProgressView setProgress:0.5f];
+    [NSTimer scheduledTimerWithTimeInterval:0.5f target:self selector:@selector(add) userInfo:nil repeats:YES];
     [cell.contentView addSubview:flightProgressView];
+    UIImage * resizeImg = [img resizableImageWithCapInsets:UIEdgeInsetsZero resizingMode:UIImageResizingModeStretch];
+    iv = [[UIImageView alloc]initWithFrame:CGRectMake(0.0f, 200.0f, 320.0f, 640.0f)];
+    iv.image = resizeImg;
+    [cell.contentView addSubview:iv];
     return cell;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
-    return 548.f;
-}
 
 -(void)add{
-    if (progressView) {
-        progressView.progress += 0.05;
+    if (flightProgressView) {
+        flightProgressView.progress += 0.3;
+        iv.frame = CGRectMake(0.0f, 200.0f, iv.frame.size.width-30.0f, iv.frame.size.height-50.0f);
     }
+}
+
+-(void)reset{
+    flightProgressView.progress = 0.0f;
+    iv.frame = CGRectMake(0.0f, 200.0f, 320.0f, 640.0f);
 }
 
 @end

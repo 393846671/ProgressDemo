@@ -9,10 +9,16 @@
 #import "CTFlightProgressView.h"
 #import <math.h>
 
+#define animationFillWidthPercent 10.0f; //动画效果没次进度前进10像素
+
 @implementation CTFlightProgressView{
     CGFloat SYSTEM_VERSION;
     ProgressImageResizingMode progressImgResizeMode;
     TrackImageResizingMode trackImgResizeMode;
+    float currentPercent;
+    int currentIndex;
+    NSTimer * timer;
+    BOOL animation;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -29,10 +35,20 @@
         progressImgResizeMode = ProgressImageResizingModeStretch;
         trackImgResizeMode = TrackImageResizingModeStretch;
         SYSTEM_VERSION = [[[UIDevice currentDevice] systemVersion] floatValue];
+        self.backgroundColor = [UIColor clearColor];
+        currentPercent = 0.0f;
+        currentIndex = 0;
+        animation = NO;
     }
     return self;
 }
 
+- (instancetype)initWithFrame:(CGRect)frame progressImageResizingMode:(ProgressImageResizingMode) progressImageResizingMode trackImageResizingMode:(TrackImageResizingMode)trackImageResizingMode {
+    self = [self initWithFrame:frame];
+    progressImgResizeMode = progressImageResizingMode;
+    trackImgResizeMode = trackImageResizingMode;
+    return self;
+}
 
 - (void)drawRect:(CGRect)rect
 {
@@ -83,9 +99,33 @@
     if (fillPercent > 0.0f) {
         CGMutablePathRef progressPathRef = CGPathCreateMutable();
         float fillWidth = fillPercent * width ;
-        CGPathMoveToPoint(progressPathRef, nil, 0.0f, radius);
         if (radius > 0) {
+            //如果有圆角的话,则要判断当前进度和圆角的关系
+            if (fillWidth > radius) {
+                //如果当前进度大于圆角半径,则正常绘制左边的圆角
+                CGPathAddArc(progressPathRef, nil, radius, radius, radius, -M_PI_2, M_PI, 1);
+                CGPathAddLineToPoint(progressPathRef, nil, 0.0f, height-radius);
+                CGPathAddArc(progressPathRef, nil, radius, height-radius, radius, M_PI, M_PI_2, 1);
+                if (fillWidth <= width - radius) {
+                    CGPathAddLineToPoint(progressPathRef, nil, fillWidth, height);
+                    CGPathAddLineToPoint(progressPathRef, nil, fillWidth, 0.0f);
+                }else if (fillWidth > width-radius){
+                    CGPathAddLineToPoint(progressPathRef, nil, fillWidth, height);
+                    //当前进度在右边圆角内
+                    double corner = acos((fillWidth+radius-width)/radius);
+                    CGPathAddArc(progressPathRef, nil, width-radius, height-radius, radius, M_PI_2, corner, 1);
+                    CGPathAddLineToPoint(progressPathRef, nil, fillWidth, radius);
+                    CGPathAddArc(progressPathRef, nil, width-radius, radius, radius, -corner, -M_PI_2, 1);
+                }
+            }else {
+                //当前进度还在左边圆角之内
+                double corner = acos((radius-fillWidth)/radius);    //计算和x轴的夹角
+                CGPathAddArc(progressPathRef, nil, radius, radius, radius, -(M_PI-corner), M_PI, 1);
+                CGPathAddLineToPoint(progressPathRef, nil, 0.0f, height-radius);
+                CGPathAddArc(progressPathRef, nil, radius, height-radius, radius, M_PI, M_PI-corner, 1);
+            }
             
+            CGPathCloseSubpath(progressPathRef);
         }else{  //如果没有圆角,直接画直线
             CGPathAddLineToPoint(progressPathRef, nil, fillWidth, 0.0f);
             CGPathAddLineToPoint(progressPathRef, nil, fillWidth, height);
@@ -96,10 +136,7 @@
         CGContextAddPath(context, progressPathRef);
         CGContextFillPath(context);
         CGPathRelease(progressPathRef);
-//        CGPathAddArcToPoint(progressPathRef, nil, 0.0f, radius, radius, 0.0f, radius);
-//        CGPathAddLineToPoint(progressPathRef, nil, fillWidth-radius, 0.0f);
-//        asin(<#double#>)
-//        CGPathAddArcToPoint(progressPathRef, nil, width-radius, <#CGFloat y1#>, <#CGFloat x2#>, <#CGFloat y2#>, <#CGFloat radius#>)
+
     }
     CGContextRestoreGState(context);
 
@@ -108,11 +145,32 @@
 #pragma mark - -----------------------设置进度方法------------------------
 - (void)setProgress:(float)progress animated:(BOOL)animated{
     if (animated) { //如果需要动画的话
-
+        animation = animated;
+        if (!timer) {
+            timer = [NSTimer scheduledTimerWithTimeInterval:0.05f target:self selector:@selector(test) userInfo:nil repeats:YES];
+        }
     }else{
         _progress = progress;
         [self setNeedsDisplay];
     }
+}
+
+- (void)test{
+    if ((currentIndex*10.0f+ self.frame.size.width*currentPercent)>=(self.frame.size.width*_progress)) {
+        if (timer) {
+            [timer invalidate];
+            timer = nil;
+        }
+        
+    }else {
+        [self setNeedsDisplay];
+        currentIndex++;
+    }
+    
+}
+
+- (void)setProgress:(float)progress{
+    [self setProgress:progress animated:NO];
 }
 
 #pragma mark - -----------------------设置背景图片------------------------
@@ -209,6 +267,13 @@
     UIImage* scaledImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return scaledImage;
+}
+
+-(void)dealloc{
+    if (timer) {
+        [timer invalidate];
+        timer = nil;
+    }
 }
 @end
 

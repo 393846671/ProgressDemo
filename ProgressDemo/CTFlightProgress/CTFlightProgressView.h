@@ -34,6 +34,17 @@ typedef NS_ENUM(NSInteger,TrackImageResizingMode) {
 @property(nonatomic, retain) UIImage* trackImage;           //背景色图片
 @property(nonatomic) float radius;  //圆角半径(默认0,不需要圆角)
 
+
+//初始化PrgressView.此时默认进度条图片填充方式为拉伸,背景图片填充方式为拉伸
+- (instancetype)initWithFrame:(CGRect)frame;
+
+//初始化ProgressVew并设置进度条图片和背景图片填充模式.
+- (instancetype)initWithFrame:(CGRect)frame progressImageResizingMode:(ProgressImageResizingMode) progressImageResizingMode trackImageResizingMode:(TrackImageResizingMode)trackImageResizingMode;
+
+//设置进度
+-(void)setProgress:(float)progress;
+
+//设置进度并指定动画效果
 - (void)setProgress:(float)progress animated:(BOOL)animated;
 
 @end
