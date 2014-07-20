@@ -146,28 +146,18 @@
 - (void)setProgress:(float)progress animated:(BOOL)animated{
     if (animated) { //如果需要动画的话
         animation = animated;
-        if (!timer) {
-            timer = [NSTimer scheduledTimerWithTimeInterval:0.05f target:self selector:@selector(test) userInfo:nil repeats:YES];
-        }
+        [UIView animateWithDuration:0.3f delay:0 options:UIViewAnimationOptionAllowUserInteraction animations:^{
+            [UIView setAnimationCurve:UIViewAnimationCurveLinear];
+            self.progress = progress;
+        } completion:^(BOOL finished) {
+//            isAnimating_ = NO;
+        }];
     }else{
         _progress = progress;
         [self setNeedsDisplay];
     }
 }
 
-- (void)test{
-    if ((currentIndex*10.0f+ self.frame.size.width*currentPercent)>=(self.frame.size.width*_progress)) {
-        if (timer) {
-            [timer invalidate];
-            timer = nil;
-        }
-        
-    }else {
-        [self setNeedsDisplay];
-        currentIndex++;
-    }
-    
-}
 
 - (void)setProgress:(float)progress{
     [self setProgress:progress animated:NO];
