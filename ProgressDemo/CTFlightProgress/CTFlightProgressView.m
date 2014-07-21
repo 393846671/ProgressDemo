@@ -9,7 +9,6 @@
 #import "CTFlightProgressView.h"
 #import <math.h>
 
-#define animationFillWidthPercent 10.0f; //动画效果没次进度前进10像素
 
 @implementation CTFlightProgressView{
     CGFloat SYSTEM_VERSION;
