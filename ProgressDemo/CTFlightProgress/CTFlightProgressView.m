@@ -63,17 +63,15 @@
     
     //设置填充百分比
     CGFloat fillPercent = 0.0f;
-    if (_progress <= 0.0f) {
+    if (animation) {
+        fillPercent = currentPercent;
+    }else{
+        fillPercent = _progress;
+    }
+    if (fillPercent <= 0.0f) {
         fillPercent = 0.0f;
-    }else if (_progress >= 1.0f){
+    }else if (fillPercent >= 1.0f){
         fillPercent = 1.0f;
-    }else {
-        if (animation) {
-            fillPercent = currentPercent;
-        }else{
-            fillPercent = _progress;
-        }
-        
     }
     
     //绘制track
@@ -147,15 +145,18 @@
 
 #pragma mark - -----------------------设置进度方法------------------------
 - (void)setProgress:(float)progress animated:(BOOL)animated{
+    if (progress>1.0f) {
+        progress = 1.0f;
+    }
     currentPercent = _progress;
+    animation = animated;
+    _progress = progress;
     if (animated) { //如果需要动画的话
-        animation = animated;
-        _progress = progress;
         timer = [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(animationDraw) userInfo:nil repeats:YES];
     }else{
-        _progress = progress;
         [self setNeedsDisplay];
     }
+
 }
 
 -(void)animationDraw{
