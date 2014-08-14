@@ -129,6 +129,7 @@
             
             CGPathCloseSubpath(progressPathRef);
         }else{  //如果没有圆角,直接画直线
+            CGPathMoveToPoint(progressPathRef, nil, 0.0f, 0.0f);
             CGPathAddLineToPoint(progressPathRef, nil, fillWidth, 0.0f);
             CGPathAddLineToPoint(progressPathRef, nil, fillWidth, height);
             CGPathAddLineToPoint(progressPathRef, nil, 0.0f, height);
